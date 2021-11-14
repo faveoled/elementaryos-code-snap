@@ -1,0 +1,71 @@
+name: elementaryos-code
+base: core20
+version: '6.0.1'
+summary: Code editor designed for elementary OS 
+description: |
+  Code editor designed for elementary OS.
+
+grade: stable # must be 'stable' to release into candidate/stable channels or 'devel'
+confinement: devmode   #use classic if all fs required OR if you need local gtk2 theming
+
+package-repositories:
+ - type: apt
+   ppa: apandada1/libhandy-1
+ - type: apt
+   ppa: elementary-os/stable
+
+parts:
+  elementaryos-code:
+    plugin: nil
+    stage-packages:
+      - io.elementary.code
+
+  desktop-gnome-platform:
+    source: https://github.com/ubuntu/snapcraft-desktop-helpers.git
+    source-subdir: gtk
+    plugin: make
+    make-parameters: ["FLAVOR=gtk3"]
+    build-packages:
+      - gcc
+    override-build: |
+      snapcraftctl build
+      mkdir -pv $SNAPCRAFT_PART_INSTALL/gnome-platform
+
+
+apps:
+  elementaryos-code:
+    command: bin/desktop-launch $SNAP/usr/bin/io.elementary.code   
+    plugs:
+      - opengl
+      - network
+      - desktop
+      - desktop-legacy
+      - gsettings # For desktop theme detection under Wayland session
+      - unity7
+      - x11
+      - wayland
+      - home
+      - removable-media
+  gsettings:
+    command: bin/desktop-launch gsettings
+    plugs: 
+      - gsettings
+      
+
+plugs:
+  gnome-3-38-2004:
+    interface: content
+    target: $SNAP/gnome-platform
+    default-provider: gnome-3-38-2004
+  gtk-3-themes:
+    interface: content
+    target: $SNAP/data-dir/themes
+    default-provider: gtk-common-themes
+  icon-themes:
+    interface: content
+    target: $SNAP/data-dir/icons
+    default-provider: gtk-common-themes
+  sound-themes:
+    interface: content
+    target: $SNAP/data-dir/sounds
+    default-provider: gtk-common-themes
